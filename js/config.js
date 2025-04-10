@@ -2,13 +2,13 @@
 const PROXY_URL = 'https://proxy.mengze.vip/proxy/';
 const HOPLAYER_URL = 'https://hoplayer.com/index.html';
 const SEARCH_HISTORY_KEY = 'videoSearchHistory';
-const MAX_HISTORY_ITEMS = 5;
+const MAX_HISTORY_ITEMS = 1000;
 
 // 网站信息配置
 const SITE_CONFIG = {
     name: 'LibreTV',
     url: 'https://libretv.is-an.org',
-    description: '免费在线视频搜索与观看平台',
+    description: '在线视频搜索与观看平台',
     logo: 'https://images.icon-icons.com/38/PNG/512/retrotv_5520.png',
     version: '1.0.0'
 };
@@ -40,6 +40,18 @@ const API_SITES = {
     wolong: {
         api: 'https://wolongzyw.com',
         name: '卧龙资源',
+    },
+    guangsu: {
+        api: 'https://guangsuzy.net',
+        name: '光速资源',
+    },
+    subo: {
+        api: 'https://subozy.com',
+        name: '速播资源',
+    },
+    liangzi: {
+        api: 'https://lzizy.net',
+        name: '量子资源',
     },
     cjhw: {
         api: 'https://cjhwba.com',
@@ -120,7 +132,7 @@ const SECURITY_CONFIG = {
 // 添加多个自定义API源的配置
 const CUSTOM_API_CONFIG = {
     separator: ',',           // 分隔符
-    maxSources: 5,            // 最大允许的自定义源数量
+    maxSources: 100,            // 最大允许的自定义源数量
     testTimeout: 5000,        // 测试超时时间(毫秒)
     namePrefix: 'Custom-',    // 自定义源名称前缀
     validateUrl: true,        // 验证URL格式
