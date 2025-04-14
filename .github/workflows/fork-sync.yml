@@ -1,9 +1,9 @@
 name: Auto Sync Fork
 
 on:
-  workflow_dispatch: # 允许手动触发 workflow (可选)
+  workflow_dispatch:
   schedule:
-    - cron: '0 0 * * *' # 每天 UTC 00:00 运行 (可以根据需求修改)
+    - cron: '0 0 * * *'
 
 jobs:
   sync_fork:
@@ -20,8 +20,8 @@ jobs:
 
       - name: Fetch Upstream
         env:
-          SOURCE_REPO: bestZwei/LibreTV  # 原项目仓库名
-          LIBRETV_TOKEN: ${{ secrets.LIBRETV_TOKEN }} # 使用你的 token 名称
+          SOURCE_REPO: bestZwei/LibreTV
+          LIBRETV_TOKEN: ${{ secrets.LIBRETV_TOKEN }}
         run: |
           git remote add upstream "https://github.com/${{ env.SOURCE_REPO }}.git"
           git fetch upstream
@@ -31,7 +31,7 @@ jobs:
         id: Merge_Upstream_Changes
         run: |
           git checkout main # 切换到你的主分支 (例如 main 或 master)
-          git merge upstream/main
+          git merge --allow-unrelated-histories upstream/main # 添加 --allow-unrelated-histories
           echo "::set-output name=has_changes::$(git status --porcelain)" # 检查是否有更改
 
       - name: Push Changes to Fork
