@@ -3,7 +3,7 @@ name: Auto Sync Fork
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 0 * * *'
+    - cron: '0 0 * * *' # 每天 00:00 执行
 
 jobs:
   sync_fork:
@@ -20,58 +20,16 @@ jobs:
 
       - name: Fetch Upstream
         env:
-          SOURCE_REPO: bestZwei/LibreTV
-          LIBRETV_TOKEN: ${{ secrets.LIBRETV_TOKEN }}
+          SOURCE_REPO: bestZwei/LibreTV # 替换为你的上游仓库
+          LIBRETV_TOKEN: ${{ secrets.LIBRETV_TOKEN }} # 替换为你的上游仓库token，如果不需要可以删除这个secret
         run: |
           git remote add upstream "https://github.com/${{ env.SOURCE_REPO }}.git"
           git fetch upstream
+          # 如果你的上游仓库需要身份验证，请取消注释以下行，并替换为你的令牌
           git config --global http.https://github.com/.extraheader "AUTHORIZATION: basic $(echo -n :${{ env.LIBRETV_TOKEN }} | base64)" # 添加身份验证
 
-      - name: Merge Upstream Changes
-        id: Merge_Upstream_Changes
+      - name: Merge Upstream Changes (Theirs Strategy)
         run: |
           git checkout main # 切换到你的主分支 (例如 main 或 master)
-          git merge --allow-unrelated-histories upstream/main # 添加 --allow-unrelated-histories
-          echo "::set-output name=has_changes::$(git status --porcelain)" # 检查是否有更改
-          
-      - name: Resolve Conflicts
-        if: steps.Merge_Upstream_Changes.outputs.has_changes != ''
-        run: |
-          # 尝试使用 git merge-file 自动解决冲突 (可能需要调整)
-          git merge-file -p .github/workflows/docker-build.yml .github/workflows/docker-build.yml upstream/main:.github/workflows/docker-build.yml || echo "Conflict in .github/workflows/docker-build.yml"
-          git merge-file -p css/styles.css css/styles.css upstream/main:css/styles.css || echo "Conflict in css/styles.css"
-          git merge-file -p index.html index.html upstream/main:index.html || echo "Conflict in index.html"
-          git merge-file -p js/api.js js/api.js upstream/main:js/api.js || echo "Conflict in js/api.js"
-          git merge-file -p js/app.js js/app.js upstream/main:js/app.js || echo "Conflict in js/app.js"
-          git merge-file -p js/config.js js/config.js upstream/main:js/config.js || echo "Conflict in js/config.js"
-          git merge-file -p js/ui.js js/ui.js upstream/main:js/ui.js || echo "Conflict in js/ui.js"
-          git merge-file -p player.html player.html upstream/main:player.html || echo "Conflict in player.html"
-          git merge-file -p readme.md readme.md upstream/main:readme.md || echo "Conflict in readme.md"
-
-          # 添加所有修改后的文件
-          git add .
-
-          # 检查是否有未解决的冲突
-          if git diff --check; then
-            echo "All conflicts resolved automatically."
-          else
-            echo "Unresolved conflicts remain.  Please resolve them manually."
-            exit 1  # 停止 workflow
-          fi
-
-      - name: Commit Resolved Conflicts
-        if: steps.Resolve_Conflicts.outcome == 'success'
-        run: |
-          git commit -m "Merge upstream changes and resolve conflicts"
-
-      - name: Push Changes to Fork
-        if: steps.Resolve_Conflicts.outcome == 'success'
-        run: |
+          git merge -X theirs upstream/main # 使用 -X theirs 策略合并上游更改
           git push origin main # 推送到你的主分支
-          echo "Changes pushed to fork."
-
-      - name: Push Changes to Fork
-        if: steps.Merge_Upstream_Changes.outputs.has_changes != ''
-        run: |
-          git push origin main # 推送到你的主分支
-          echo "Changes pushed to fork."
