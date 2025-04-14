@@ -26,11 +26,18 @@ jobs:
           LIBRETV_TOKEN: ${{ secrets.LIBRETV_TOKEN }} # 替换为你的上游仓库token，如果不需要可以删除这个secret
         run: |
           git remote add upstream "https://github.com/${{ env.SOURCE_REPO }}.git"
-          git fetch upstream --all # 修改此处，将仓库名称提前
+          git fetch upstream
           # 如果你的上游仓库需要身份验证，请取消注释以下行，并替换为你的令牌
           git config --global http.https://github.com/.extraheader "AUTHORIZATION: basic $(echo -n :${{ env.LIBRETV_TOKEN }} | base64)" # 添加身份验证
 
-      - name: Reset and Force Push
+      - name: Attempt Merge
+        run: |
+          git checkout main
+          git merge upstream/main
+        continue-on-error: true # 允许这一步失败
+
+      - name: Reset and Force Push (if merge failed)
+        if: steps.Attempt_Merge.outcome == 'failure'
         run: |
           git checkout main # 切换到你的主分支 (例如 main 或 master)
           git reset --hard upstream/main # 强制将本地分支重置为上游分支
