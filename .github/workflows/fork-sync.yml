@@ -12,6 +12,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # 获取所有历史记录
 
       - name: Configure Git
         run: |
@@ -24,12 +26,12 @@ jobs:
           LIBRETV_TOKEN: ${{ secrets.LIBRETV_TOKEN }} # 替换为你的上游仓库token，如果不需要可以删除这个secret
         run: |
           git remote add upstream "https://github.com/${{ env.SOURCE_REPO }}.git"
-          git fetch upstream
+          git fetch --all upstream
           # 如果你的上游仓库需要身份验证，请取消注释以下行，并替换为你的令牌
           git config --global http.https://github.com/.extraheader "AUTHORIZATION: basic $(echo -n :${{ env.LIBRETV_TOKEN }} | base64)" # 添加身份验证
 
-      - name: Merge Upstream Changes (Theirs Strategy)
+      - name: Reset and Force Push
         run: |
           git checkout main # 切换到你的主分支 (例如 main 或 master)
-          git merge -X theirs upstream/main # 使用 -X theirs 策略合并上游更改
-          git push origin main # 推送到你的主分支
+          git reset --hard upstream/main # 强制将本地分支重置为上游分支
+          git push origin main --force # 强制推送本地更改到远程仓库 (请谨慎使用 --force)
