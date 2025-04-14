@@ -1,14 +1,15 @@
 // 全局常量配置
-const PROXY_URL = 'https://proxy.mengze.vip/proxy/';
+
+const PROXY_URL = 'https://cors.zme.ink/';
 const HOPLAYER_URL = 'https://hoplayer.com/index.html';
 const SEARCH_HISTORY_KEY = 'videoSearchHistory';
-const MAX_HISTORY_ITEMS = 1000;
+const MAX_HISTORY_ITEMS = 5;
 
 // 网站信息配置
 const SITE_CONFIG = {
     name: 'LibreTV',
     url: 'https://libretv.is-an.org',
-    description: '在线视频搜索与观看平台',
+    description: '免费在线视频搜索与观看平台',
     logo: 'https://images.icon-icons.com/38/PNG/512/retrotv_5520.png',
     version: '1.0.0'
 };
@@ -32,6 +33,7 @@ const API_SITES = {
     ckzy: {
         api: 'https://www.ckzy1.com',
         name: 'CK资源',
+        adult: true
     },
     zy360: {
         api: 'https://360zy.com',
@@ -41,25 +43,71 @@ const API_SITES = {
         api: 'https://wolongzyw.com',
         name: '卧龙资源',
     },
-    guangsu: {
-        api: 'https://guangsuzy.net',
-        name: '光速资源',
-    },
-    subo: {
-        api: 'https://subozy.com',
-        name: '速播资源',
-    },
-    liangzi: {
-        api: 'https://lzizy.net',
-        name: '量子资源',
-    },
     cjhw: {
         api: 'https://cjhwba.com',
         name: '新华为',
     },
+    jisu: {
+        api: 'https://jszyapi.com',
+        name: '极速资源',
+        detail: 'https://jszyapi.com'
+    },
     dbzy: {
         api: 'https://dbzy.com',
         name: '豆瓣资源',
+    },
+    bfzy: {
+        api: 'https://bfzyapi.com',
+        name: '暴风资源',
+    },
+    mozhua: {
+        api: 'https://mozhuazy.com',
+        name: '魔爪资源',
+    },
+    mdzy: {
+        api: 'https://www.mdzyapi.com',
+        name: '魔都资源',
+    },
+    ruyi: {
+        api: 'https://cj.rycjapi.com',
+        name: '如意资源',
+    },
+    
+    jkun: {
+        api: 'https://jkunzyapi.com',
+        name: 'jkun资源',
+        adult: true
+    },
+    bwzy: {
+        api: 'https://api.bwzym3u8.com',
+        name: '百万资源',
+        adult: true
+    },
+    souav: {
+        api: 'https://api.souavzy.vip',
+        name: 'souav资源',
+        adult: true
+    },
+    siwa: {
+        api: 'https://siwazyw.tv',
+        name: '丝袜资源',
+        adult: true
+    },
+    r155: {
+        api: 'https://155api.com',
+        name: '155资源',
+        adult: true
+    },
+    lsb: {
+        api: 'https://apilsbzy1.com',
+        name: 'lsb资源',
+        adult: true
+    },
+    huangcang: {
+        api: 'https://hsckzy.vip',
+        name: '黄色仓库',
+        adult: true,
+        detail: 'https://hsckzy.vip' // 添加detail URL以便特殊处理
     }
 };
 
@@ -106,7 +154,9 @@ const PLAYER_CONFIG = {
     height: '600',
     timeout: 15000,  // 播放器加载超时时间
     filterAds: true,  // 是否启用广告过滤
-    autoPlayNext: true  // 默认启用自动连播功能
+    autoPlayNext: true,  // 默认启用自动连播功能
+    adFilteringEnabled: true, // 默认开启分片广告过滤
+    adFilteringStorage: 'adFilteringEnabled' // 存储广告过滤设置的键名
 };
 
 // 增加错误信息本地化
@@ -132,10 +182,14 @@ const SECURITY_CONFIG = {
 // 添加多个自定义API源的配置
 const CUSTOM_API_CONFIG = {
     separator: ',',           // 分隔符
-    maxSources: 100,            // 最大允许的自定义源数量
+    maxSources: 5,            // 最大允许的自定义源数量
     testTimeout: 5000,        // 测试超时时间(毫秒)
     namePrefix: 'Custom-',    // 自定义源名称前缀
     validateUrl: true,        // 验证URL格式
     cacheResults: true,       // 缓存测试结果
-    cacheExpiry: 5184000000   // 缓存过期时间(2个月)
+    cacheExpiry: 5184000000,  // 缓存过期时间(2个月)
+    adultPropName: 'isAdult'  // 用于标记成人内容的属性名
 };
+
+// 新增隐藏内置黄色采集站API的变量，默认为true
+const HIDE_BUILTIN_ADULT_APIS = true;
