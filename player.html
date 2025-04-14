@@ -229,8 +229,8 @@
         <span id="shortcutText"></span>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.6/dist/hls.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/dplayer@1.26.0/dist/DPlayer.min.js"></script>
+    <script src="https://s4.zstatic.net/ajax/libs/hls.js/1.5.6/hls.min.js" integrity="sha256-X1GmLMzVcTBRiGjEau+gxGpjRK96atNczcLBg5w6hKA=" crossorigin="anonymous"></script>
+    <script src="https://s4.zstatic.net/ajax/libs/dplayer/1.26.0/DPlayer.min.js" integrity="sha256-OJg03lDZP0NAcl3waC9OT5jEa8XZ8SM2n081Ik953o4=" crossorigin="anonymous"></script>
     <script src="js/config.js"></script>
     <script>
         // 全局变量
@@ -245,6 +245,7 @@
         let videoHasEnded = false; // 跟踪视频是否已经自然结束
         let userClickedPosition = null; // 记录用户点击的位置
         let shortcutHintTimeout = null; // 用于控制快捷键提示显示时间
+        let adFilteringEnabled = true; // 默认开启广告过滤
 
         // 页面加载
         document.addEventListener('DOMContentLoaded', function() {
@@ -261,6 +262,9 @@
             // 设置自动连播开关状态
             autoplayEnabled = localStorage.getItem('autoplayEnabled') !== 'false'; // 默认为true
             document.getElementById('autoplayToggle').checked = autoplayEnabled;
+            
+            // 获取广告过滤设置
+            adFilteringEnabled = localStorage.getItem(PLAYER_CONFIG.adFilteringStorage) !== 'false'; // 默认为true
             
             // 监听自动连播开关变化
             document.getElementById('autoplayToggle').addEventListener('change', function(e) {
@@ -309,7 +313,7 @@
             document.addEventListener('keydown', handleKeyboardShortcuts);
         });
 
-        // 新增：处理键盘快捷键
+        // 处理键盘快捷键
         function handleKeyboardShortcuts(e) {
             // 忽略输入框中的按键事件
             if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
@@ -333,7 +337,7 @@
             }
         }
 
-        // 新增：显示快捷键提示
+        // 显示快捷键提示
         function showShortcutHint(text, direction) {
             const hintElement = document.getElementById('shortcutHint');
             const textElement = document.getElementById('shortcutText');
@@ -369,7 +373,7 @@
             // 配置HLS.js选项
             const hlsConfig = {
                 debug: false,
-                loader: CustomHlsJsLoader,
+                loader: adFilteringEnabled ? CustomHlsJsLoader : Hls.DefaultConfig.loader,
                 enableWorker: true,
                 lowLatencyMode: false,
                 backBufferLength: 90,
@@ -403,13 +407,29 @@
                 preload: 'auto',
                 loop: false,
                 lang: 'zh-cn',
-                hotkey: true,
+                hotkey: true,        // 启用键盘控制，包括空格暂停/播放、方向键控制进度和音量
                 mutex: true,
                 volume: 0.7,
+                screenshot: true,                // 启用截图功能
+                preventClickToggle: false,       // 允许点击视频切换播放/暂停
+                airplay: true,                   // 在Safari中启用AirPlay功能
+                chromecast: true,                // 启用Chromecast投屏功能
+                contextmenu: [                   // 自定义右键菜单
+                    {
+                        text: '关于 LibreTV',
+                        link: 'https://github.com/bestzwei/LibreTV'
+                    },
+                    {
+                        text: '问题反馈',
+                        click: (player) => {
+                            window.open('https://github.com/bestzwei/LibreTV/issues', '_blank');
+                        }
+                    }
+                ],
                 video: {
                     url: videoUrl,
                     type: 'hls',
-                    pic: '',
+                    pic: 'https://img.picgo.net/2025/04/12/image362e7d38b4af4a74.png', // 设置视频封面图
                     customType: {
                         hls: function(video, player) {
                             // 清理之前的HLS实例
