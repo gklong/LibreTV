@@ -1,0 +1,41 @@
+name: Auto Sync Fork
+
+on:
+  workflow_dispatch: # 允许手动触发 workflow (可选)
+  schedule:
+    - cron: '0 0 * * *' # 每天 UTC 00:00 运行 (可以根据需求修改)
+
+jobs:
+  sync_fork:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure Git
+        run: |
+          git config --global user.name "GitHub Actions Bot"
+          git config --global user.email "actions@github.com"
+
+      - name: Fetch Upstream
+        env:
+          SOURCE_REPO: bestZwei/LibreTV  # 原项目仓库名
+          LIBRETV_TOKEN: ${{ secrets.LIBRETV_TOKEN }} # 使用你的 token 名称
+        run: |
+          git remote add upstream "https://github.com/${{ env.SOURCE_REPO }}.git"
+          git fetch upstream
+          git config --global http.https://github.com/.extraheader "AUTHORIZATION: basic $(echo -n :${{ env.LIBRETV_TOKEN }} | base64)" # 添加身份验证
+
+      - name: Merge Upstream Changes
+        id: Merge_Upstream_Changes
+        run: |
+          git checkout main # 切换到你的主分支 (例如 main 或 master)
+          git merge upstream/main
+          echo "::set-output name=has_changes::$(git status --porcelain)" # 检查是否有更改
+
+      - name: Push Changes to Fork
+        if: steps.Merge_Upstream_Changes.outputs.has_changes != ''
+        run: |
+          git push origin main # 推送到你的主分支
+          echo "Changes pushed to fork."
